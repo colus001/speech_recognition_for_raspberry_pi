@@ -9,18 +9,22 @@ var BUTTONS = {
 
 var GPIO = require('node-pi-gpio');
 var Promise = require('es6-promise').Promise;
-var Speakable = require('speakable');
-var MongoClient = require('mongodb').MongoClient;
+var Speakable = require('./');
+var DDPClient = require('ddp');
 
 var speakable = new Speakable({ key: 'AIzaSyDOJE7TY2p4SwpluK8ojaoXuDG_0mUim0c' }, { threshold: '5%' });
 
 var recordButton = new GPIO(BUTTONS.RECORD, 'in', 'both');
 var isStarted = false;
 
+var ddpclient = new DDPClient({
+  useSockJs: true
+});
+
 console.log('Starting the app...');
 
-MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
-  if (err) console.log ('db connection error:', err);
+ddpclient.connect(function(error, wasReconnect) {
+  if (error) console.log ('error ddp connection:', error);
 
   Promise
     .all([GPIO.open(BUTTONS.RECORD, 'in')]).then(function(res) {
@@ -60,7 +64,13 @@ MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
   });
 
   function _sendWords (words) {
-    if (!db) return console.log('no database found:', db);
-    db.collection('query').insert({ query: words.join().replace(/,/, " ") })
+    message = words.join().replace(/,/, " ");
+    console.log('sending message:', message);
+    ddpclient.call('newQuery', [message], function (err, result) {
+      if (err) console.log('newQuery error:', err);
+      console.log('called function, result: ' + result);
+    });
+    // RTGif.insert(giphyFilter(result.data, size));
   }
+
 });
