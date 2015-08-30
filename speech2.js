@@ -1,9 +1,9 @@
 // Don't forget to run export AUDIODEV='hw:1,0' && export AUDIODRIVER='alsa'
 
 var BUTTONS = {
-  RECORD: 18,
-  NEXT: 19,
-  PREV: 20,
+  RECORD: 19,
+  LEFT: 26,
+  RIGHT: 20,
   OK: 21
 };
 
@@ -11,6 +11,8 @@ var GPIO = require('node-pi-gpio');
 var Promise = require('es6-promise').Promise;
 var Speakable = require('./');
 var DDPClient = require('ddp');
+var WebSocket = require('ws');
+var ws = new WebSocket('ws://192.168.0.69:9090');
 
 var speakable = new Speakable({ key: 'AIzaSyDOJE7TY2p4SwpluK8ojaoXuDG_0mUim0c' }, { threshold: '5%' });
 
@@ -23,19 +25,57 @@ var ddpclient = new DDPClient({
 
 console.log('Starting the app...');
 
+function _sendMessage (message) {
+  console.log('sending...:', message);
+  setTimeout(function timeout() {
+    ws.send(message)
+  }, 500);
+}
+
+ws.on('open', function () {
+  _sendMessage('ready');
+})
+
 ddpclient.connect(function(error, wasReconnect) {
   if (error) console.log ('error ddp connection:', error);
 
+  var buttons = [
+    GPIO.open(BUTTONS.RECORD, 'in'),
+    GPIO.open(BUTTONS.LEFT, 'in'),
+    GPIO.open(BUTTONS.RIGHT, 'in'),
+    GPIO.open(BUTTONS.OK, 'in'),
+  ];
+
   Promise
-    .all([GPIO.open(BUTTONS.RECORD, 'in')]).then(function(res) {
-      var button = res[0];
-      return button.on('change', function(state) {
+    .all(buttons).then(function(res) {
+      var recordButton = res[0], leftButton = res[1], rightButton = res[2], okButton = res[3];
+
+      recordButton.on('change', function(state) {
         if ( state == 1 && !isStarted ) {
           console.log('recordVoice');
           isStarted = true;
           speakable.recordVoice();
         }
       });
+
+      leftButton.on('change', function (state) {
+        if ( state == 1 ) {
+          _sendMessage('left');
+        }
+      });
+
+      rightButton.on('change', function (state) {
+        if ( state == 1 ) {
+          _sendMessage('right');
+        }
+      });
+
+      okButton.on('change', function (state) {
+        if ( state == 1 ) {
+          _sendMessage('okay');
+        }
+      });
+      return;
     })["catch"](function(err) {
       return console.log('err', err.stack);
     });
