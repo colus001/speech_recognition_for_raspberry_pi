@@ -22,7 +22,6 @@ console.log('Starting the app...');
 
 MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
   if (err) console.log ('db connection error:', err);
-  _sendWords(['apple']);
 
   Promise
     .all([GPIO.open(BUTTONS.RECORD, 'in')]).then(function(res) {
@@ -30,7 +29,7 @@ MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
       return button.on('change', function(state) {
         if ( state == 1 && !isStarted ) {
           isStarted = true;
-          return speakable.recordVoice();
+          speakable.recordVoice();
         }
       });
     })["catch"](function(err) {
