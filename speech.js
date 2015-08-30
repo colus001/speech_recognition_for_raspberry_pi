@@ -1,4 +1,4 @@
-// Don't forget to run export AUDIODEV='hw:1,0' && export AUDIODRIVER=alsa
+// Don't forget to run export AUDIODEV='hw:1,0' && export AUDIODRIVER='alsa'
 
 var BUTTONS = {
   RECORD: 18,
@@ -28,6 +28,7 @@ MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
       var button = res[0];
       return button.on('change', function(state) {
         if ( state == 1 && !isStarted ) {
+          console.log('recordVoice');
           isStarted = true;
           speakable.recordVoice();
         }
@@ -35,12 +36,6 @@ MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
     })["catch"](function(err) {
       return console.log('err', err.stack);
     });
-
-  speakable.on('speechResult', function(recognizedWords) {
-    console.log('onSpeechResult:', recognizedWords)
-    _sendWords(recognizedWords);
-    isStarted = false;
-  });
 
   speakable.on('speechStart', function() {
     console.log('onSpeechStart');
@@ -56,6 +51,12 @@ MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
 
   speakable.on('error', function(err) {
     console.log('onError:', err);
+    isStarted = false;
+  });
+
+  speakable.on('speechResult', function(recognizedWords) {
+    console.log('onSpeechResult:', recognizedWords)
+    _sendWords(recognizedWords);
     isStarted = false;
   });
 
