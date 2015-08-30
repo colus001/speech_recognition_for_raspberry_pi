@@ -1,6 +1,6 @@
 ## Dependencies.
 
 ```
-AUDIODEV='hw:1,0'
+export AUDIODEV='hw:1,0'
 export AUDIODRIVER=alsa
 ```
