@@ -11,7 +11,7 @@ var GPIO = require('node-pi-gpio');
 var Promise = require('es6-promise').Promise;
 var Speakable = require('speakable');
 
-var speakable = new Speakable({ key: 'AIzaSyDOJE7TY2p4SwpluK8ojaoXuDG_0mUim0c' }, { threshold: '10%' });
+var speakable = new Speakable({ key: 'AIzaSyDOJE7TY2p4SwpluK8ojaoXuDG_0mUim0c' }, { threshold: '5%' });
 
 var recordButton = new GPIO(BUTTONS.RECORD, 'in', 'both');
 var isStarted = false;
@@ -22,6 +22,7 @@ console.log('Starting the app...');
 
 MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
   if (err) console.log ('db connection error:', err);
+  _sendWords(['apple']);
 
   Promise
     .all([GPIO.open(BUTTONS.RECORD, 'in')]).then(function(res) {
@@ -55,15 +56,12 @@ MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
   });
 
   speakable.on('error', function(err) {
-    console.log('onError:');
-    console.log(err);
+    console.log('onError:', err);
     isStarted = false;
   });
 
   function _sendWords (words) {
-    if (!db) return;
+    if (!db) return console.log('no database found:', db);
     db.query.insert({ query: recognizedWords.join().replace(/,/, " ") })
   }
-
-  console.log('waiting...');
 });
