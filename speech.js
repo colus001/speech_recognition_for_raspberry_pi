@@ -19,7 +19,7 @@ var isStarted = false;
 var MongoClient = require('mongodb').MongoClient;
 
 MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
-  if (err) return console.log ('db connection error:', err);
+  if (err) console.log ('db connection error:', err);
 
   Promise
     .all([GPIO.open(BUTTONS.RECORD, 'in')]).then(function(res) {
@@ -59,6 +59,7 @@ MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
   });
 
   function _sendWords (words) {
+    if (!db) return;
     db.query.insert({ query: recognizedWords.join().replace(/,/, " ") })
   }
 });
