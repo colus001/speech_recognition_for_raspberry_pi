@@ -18,6 +18,8 @@ var isStarted = false;
 
 var MongoClient = require('mongodb').MongoClient;
 
+console.log('Starting the app...');
+
 MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
   if (err) console.log ('db connection error:', err);
 
@@ -62,4 +64,6 @@ MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
     if (!db) return;
     db.query.insert({ query: recognizedWords.join().replace(/,/, " ") })
   }
+
+  console.log('waiting...');
 });
