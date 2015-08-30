@@ -9,7 +9,7 @@ var BUTTONS = {
 
 var GPIO = require('node-pi-gpio');
 var Promise = require('es6-promise').Promise;
-var Speakable = require('./lib/node-speakable');
+var Speakable = require('speakable');
 
 var speakable = new Speakable({ key: 'AIzaSyDOJE7TY2p4SwpluK8ojaoXuDG_0mUim0c' }, { threshold: '10%' });
 
@@ -20,7 +20,7 @@ var MongoClient = require('mongodb').MongoClient;
 
 MongoClient.connect('mongodb://127.0.0.1:3001/meteor', function(err, db) {
   if (err) return console.log ('db connection error:', err);
-  
+
   Promise
     .all([GPIO.open(BUTTONS.RECORD, 'in')]).then(function(res) {
       var button = res[0];
